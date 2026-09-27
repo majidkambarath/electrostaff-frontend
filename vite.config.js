@@ -3,10 +3,11 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
-// Long-lived vendor chunks: app deploys don't force phones to re-download React, Radix or charts.
+// Long-lived vendor chunks: app deploys don't force phones to re-download React or Radix.
+// (recharts is left out on purpose: it is already split with the pages that draw charts, and
+// grouping it here drags shared helpers into it, making every page load the chart library.)
 const vendorChunk = (id) => {
   if (!id.includes('node_modules')) return undefined
-  if (/recharts|d3-|victory-vendor|decimal\.js/.test(id)) return 'charts'
   if (id.includes('@radix-ui')) return 'radix'
   if (/react-hook-form|@hookform|[\\/]zod[\\/]/.test(id)) return 'forms'
   if (/[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/.test(id)) return 'react'
