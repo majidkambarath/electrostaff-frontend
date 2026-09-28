@@ -1,0 +1,7 @@
+# Netlify rules (copied into dist/ by Vite). Order matters: first match wins.
+
+# API: proxy to the Render backend so the app stays same-origin (no CORS, cookies/headers pass through).
+/api/*  https://electrostaff-backend.onrender.com/api/:splat  200
+
+# SPA: every other path loads the app; React Router shows the right screen.
+/*      /index.html  200
