@@ -176,8 +176,8 @@ export function StaffFormSheet({ open, onOpenChange, staff, onSaved }) {
                   <div className="flex items-start gap-3 rounded-md border border-border p-3">
                     <Checkbox id="staff-app-login" checked={field.value} onCheckedChange={(v) => field.onChange(Boolean(v))} className="mt-0.5" />
                     <Label htmlFor="staff-app-login" className="text-sm font-normal">
-                      <span className="block font-medium">Give staff app login</span>
-                      <span className="text-muted-foreground">They can mark attendance, see payslips and apply for leave. You’ll get a password to send on WhatsApp.</span>
+                      <span className="block font-medium">Give staff app login &amp; send it on WhatsApp</span>
+                      <span className="text-muted-foreground">A password is created and WhatsApp opens on this phone number with the login ready to send. They can mark attendance, see payslips and apply for leave.</span>
                     </Label>
                   </div>
                 )}

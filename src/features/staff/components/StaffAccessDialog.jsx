@@ -3,24 +3,13 @@ import { toast } from 'sonner';
 import { Copy, KeyRound, MessageCircle, ShieldOff } from 'lucide-react';
 import { staffApi } from '@/features/staff/api';
 import { useOrg } from '@/features/auth/AuthContext';
-import { whatsappUrl } from '@/shared/lib/format';
+import { businessLabel, loginWhatsappUrl, sendLoginOnWhatsApp, loginMessage } from '@/features/staff/loginShare';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
 import { Field } from '@/shared/components/Field';
 import { useConfirm } from '@/shared/components/ConfirmDialog';
-
-const loginMessage = ({ name, phone, password }, business) =>
-  [
-    `Hello ${name.split(' ')[0]}, here is your ${business || 'ElectroStaff'} staff app login:`,
-    '',
-    `App: ${window.location.origin}`,
-    `Mobile: ${phone}`,
-    `Password: ${password}`,
-    '',
-    'Open the link, sign in, then set your own password. You can mark attendance, see payslips and apply for leave.',
-  ].join('\n');
 
 // Gives a worker a staff-app login (or resets it) and shares it once. `credentials` opens
 // the dialog directly on the "share" step (e.g. right after registering with a login).
@@ -40,7 +29,7 @@ export function StaffAccessDialog({ staff, open, onOpenChange, credentials, onCh
   }, [open, credentials]);
 
   if (!staff) return null;
-  const business = org?.name && org.name !== 'Default Organization' ? org.name : 'ElectroStaff';
+  const business = businessLabel(org);
 
   const grant = async () => {
     setBusy(true);
@@ -48,6 +37,7 @@ export function StaffAccessDialog({ staff, open, onOpenChange, credentials, onCh
       const creds = await staffApi.grantAccess(staff._id, mode === 'generate' ? { generate: true } : { password });
       setResult(creds);
       onChanged?.();
+      sendLoginOnWhatsApp({ ...creds, name: creds.name || staff.name }, business);
     } catch (e) {
       toast.error(e.message);
     } finally {
@@ -89,7 +79,7 @@ export function StaffAccessDialog({ staff, open, onOpenChange, credentials, onCh
           <DialogTitle>{result ? 'Send the login' : staff.portalEnabled ? 'Reset app password' : 'Give staff app login'}</DialogTitle>
           <DialogDescription>
             {result
-              ? 'This password is shown only once. They will be asked to set their own password when they sign in.'
+              ? `WhatsApp opens on ${result.phone} with this login typed in — just press send. The password is shown only once; they set their own at first sign-in.`
               : `${staff.name} signs in with their mobile number ${staff.phone}.`}
           </DialogDescription>
         </DialogHeader>
@@ -104,7 +94,7 @@ export function StaffAccessDialog({ staff, open, onOpenChange, credentials, onCh
             </dl>
             <div className="grid gap-2 sm:grid-cols-2">
               <a
-                href={whatsappUrl(result.phone, loginMessage(result, business))}
+                href={loginWhatsappUrl(result, business)}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 text-sm font-medium text-white hover:bg-emerald-600/90 sm:h-9"

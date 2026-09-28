@@ -19,10 +19,13 @@ import { FilterTabs, RowActions, SearchInput, Toolbar } from '@/shared/component
 import { useConfirm } from '@/shared/components/ConfirmDialog';
 import { StaffFormSheet } from '@/features/staff/components/StaffFormSheet';
 import { StaffAccessDialog } from '@/features/staff/components/StaffAccessDialog';
+import { businessLabel, sendLoginOnWhatsApp } from '@/features/staff/loginShare';
+import { useOrg } from '@/features/auth/AuthContext';
 
 export default function Staff() {
   const navigate = useNavigate();
   const confirm = useConfirm();
+  const { org } = useOrg();
   const { data: staff, error, loading, reload } = useApi(() => staffApi.getAll(), [], { cacheKey: 'staff' });
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('active');
@@ -236,7 +239,11 @@ export default function Staff() {
         staff={editing}
         onSaved={(saved, credentials) => {
           reload();
-          if (credentials) setAccess({ staff: { ...saved, portalEnabled: true }, credentials });
+          if (!credentials) return;
+          setAccess({ staff: { ...saved, portalEnabled: true }, credentials });
+          if (!sendLoginOnWhatsApp({ ...credentials, name: credentials.name || saved.name }, businessLabel(org))) {
+            toast.info('Tap “Send on WhatsApp” to send the login');
+          }
         }}
       />
       <StaffAccessDialog
