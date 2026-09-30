@@ -20,11 +20,12 @@ import {
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { formatDateLong } from '@/shared/lib/format';
-import { useOrg } from '@/features/auth/AuthContext';
+import { useAuth, useOrg } from '@/features/auth/AuthContext';
 import { buttonVariants } from '@/shared/ui/button';
 import { Sheet, SheetContent, SheetTitle } from '@/shared/ui/sheet';
 import { PageLoader } from '@/shared/components/PageLoader';
 import { MotionPage } from '@/shared/components/Motion';
+import { PlanBanner } from '@/shared/components/PlanBanner';
 import { InstallApp, OfflineBanner } from '@/shared/components/AppStatus';
 import { UserMenu } from '@/features/auth/UserMenu';
 import { NotificationBell } from '@/features/notifications/NotificationBell';
@@ -60,6 +61,18 @@ const NAV_GROUPS = [
   },
 ];
 
+// Site supervisors only mark attendance for their sites.
+const SUPERVISOR_NAV = [
+  {
+    label: null,
+    items: [
+      { to: '/attendance', label: 'Attendance', icon: ClipboardCheck },
+      { to: '/account', label: 'My account', icon: Settings },
+    ],
+  },
+];
+const SUPERVISOR_TABS = SUPERVISOR_NAV[0].items;
+
 const MOBILE_TABS = [
   { to: '/', label: 'Home', icon: LayoutDashboard, end: true },
   { to: '/sites', label: 'Sites', icon: Building2 },
@@ -83,9 +96,11 @@ function Brand({ name }) {
 
 function NavItems({ onNavigate }) {
   const { pathname } = useLocation();
+  const { principal } = useAuth();
+  const groups = principal?.role === 'supervisor' ? SUPERVISOR_NAV : NAV_GROUPS;
   return (
     <nav className="flex flex-col gap-4 p-3" aria-label="Main">
-      {NAV_GROUPS.map((group, i) => (
+      {groups.map((group, i) => (
         <div key={group.label || i} className="flex flex-col gap-0.5">
           {group.label && (
             <p className="px-3 pb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
@@ -139,6 +154,7 @@ function SettingsLink({ onNavigate }) {
 export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { org } = useOrg();
+  const { principal } = useAuth();
   const location = useLocation();
   const close = () => setMenuOpen(false);
 
@@ -196,10 +212,11 @@ export default function Layout() {
               <ClipboardCheck /> Mark attendance
             </Link>
             <NotificationBell />
-            <UserMenu settingsPath="/settings" />
+            <UserMenu settingsPath={principal?.role === 'supervisor' ? '/account' : '/settings'} />
           </div>
         </header>
         <OfflineBanner />
+        <PlanBanner plan={org?.plan} />
 
         <main className="mx-auto w-full max-w-[1400px] p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:p-6 lg:pb-8 print:p-0">
           <Suspense fallback={<PageLoader />}>
@@ -215,7 +232,7 @@ export default function Layout() {
         aria-label="Quick"
         className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-card pb-[env(safe-area-inset-bottom)] lg:hidden print:hidden"
       >
-        {MOBILE_TABS.map((tab) => (
+        {(principal?.role === 'supervisor' ? SUPERVISOR_TABS : MOBILE_TABS).map((tab) => (
           <NavLink
             key={tab.to}
             to={tab.to}

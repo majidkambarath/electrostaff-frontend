@@ -38,6 +38,12 @@ const staffPages = {
   Profile: () => import('@/features/portal/PortalProfile'),
 };
 
+const supervisorPages = {
+  Attendance: officePages.Attendance,
+  Account: () => import('@/features/settings/AccountPage'),
+};
+const V = Object.fromEntries(Object.entries(supervisorPages).map(([k, load]) => [k, lazy(load)]));
+
 const PlatformApp = lazy(() => import('@/features/platform/PlatformApp'));
 
 const O = Object.fromEntries(Object.entries(officePages).map(([k, load]) => [k, lazy(load)]));
@@ -87,6 +93,20 @@ function OfficeRoutes() {
   );
 }
 
+// Site supervisors: attendance for their own sites (the server enforces which sites).
+function SupervisorRoutes() {
+  usePrefetch(supervisorPages);
+  return (
+    <Routes>
+      <Route element={<AdminLayout />}>
+        <Route path="/attendance" element={<V.Attendance />} />
+        <Route path="/account" element={<V.Account />} />
+        <Route path="*" element={<Navigate to="/attendance" replace />} />
+      </Route>
+    </Routes>
+  );
+}
+
 function StaffRoutes() {
   usePrefetch(staffPages);
   return (
@@ -108,7 +128,10 @@ function StaffRoutes() {
 // Only rendered once signed in (AuthProvider shows the sign-in / sign-up screens before that).
 export default function App() {
   const { principal } = useAuth();
-  const routes = { staff: <StaffRoutes />, platform: (
+  const routes = {
+    staff: <StaffRoutes />,
+    supervisor: <SupervisorRoutes />,
+    platform: (
       <Suspense fallback={<PageLoader />}>
         <PlatformApp />
       </Suspense>

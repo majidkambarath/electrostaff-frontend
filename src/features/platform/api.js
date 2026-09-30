@@ -7,4 +7,5 @@ export const platformApi = {
   get: (id) => request(`/platform/organizations/${id}`),
   create: (payload) => request('/platform/organizations', json('POST', payload)),
   setStatus: (id, status) => request(`/platform/organizations/${id}/status`, json('PUT', { status })),
+  setPlan: (id, plan) => request(`/platform/organizations/${id}/plan`, json('PUT', plan)),
 };

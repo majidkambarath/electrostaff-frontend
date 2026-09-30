@@ -92,6 +92,11 @@ export function AttendanceRow({ staff, status, ot = 0, onChange, onOtChange, lea
                     <Navigation className="h-3 w-3" /> map
                   </a>
                 )}
+                {typeof selfCheckIn.distance === 'number' && (
+                  <span className="text-muted-foreground">
+                    · {selfCheckIn.distance >= 1000 ? `${(selfCheckIn.distance / 1000).toFixed(1)} km` : `${selfCheckIn.distance} m`} from site
+                  </span>
+                )}
               </span>
             )}
             {locked && (

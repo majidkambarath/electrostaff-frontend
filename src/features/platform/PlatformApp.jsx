@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Building2, Eye, PauseCircle, PlayCircle, Plus, ShieldCheck, Users, Zap, MapPin, Smartphone } from 'lucide-react';
 import { platformApi } from '@/features/platform/api';
 import { AddBusinessDialog } from '@/features/platform/components/AddBusinessDialog';
+import { PlanEditor } from '@/features/platform/components/PlanEditor';
 import { ChangePasswordForm } from '@/features/auth/AuthScreens';
 import { UserMenu } from '@/features/auth/UserMenu';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -25,7 +26,17 @@ import { useConfirm } from '@/shared/components/ConfirmDialog';
 const STATUS_VARIANT = { active: 'success', suspended: 'danger' };
 const STATUS_LABEL = { active: 'Allowed', suspended: 'Blocked' };
 
-function BusinessDetail({ id, onOpenChange }) {
+function PlanTag({ plan }) {
+  if (!plan?.name) return null;
+  const tone = plan.expired ? 'danger' : plan.daysLeft !== null && plan.daysLeft <= 7 ? 'warning' : 'secondary';
+  return (
+    <Badge variant={tone} className="ml-1">
+      {plan.label}{plan.expired ? ' · ended' : plan.daysLeft !== null ? ` · ${plan.daysLeft}d` : ''}
+    </Badge>
+  );
+}
+
+function BusinessDetail({ id, onOpenChange, onChanged }) {
   const { data, loading, error, reload } = useApi(() => (id ? platformApi.get(id) : null), [id], { enabled: Boolean(id) });
   return (
     <Sheet open={Boolean(id)} onOpenChange={onOpenChange}>
@@ -45,6 +56,7 @@ function BusinessDetail({ id, onOpenChange }) {
                 <StatTile label="Active sites" value={formatNumber(data.counts.activeSites)} />
                 <StatTile label="Paid wage slips" value={formatNumber(data.counts.paidPayments)} />
               </div>
+              <PlanEditor key={`${data.id}-${data.plan?.name}-${data.plan?.validUntil}`} orgId={data.id} plan={data.plan} onSaved={() => { reload(); onChanged?.(); }} />
               <dl className="space-y-1.5 text-sm">
                 {[['Phone', data.phone], ['Email', data.email], ['Address', data.address]].map(([k, v]) => (
                   <div key={k} className="flex justify-between gap-3">
@@ -192,7 +204,10 @@ function Businesses() {
                     <TableCell className="text-right tabular-nums">{o.counts.staff}</TableCell>
                     <TableCell className="text-right tabular-nums">{o.counts.activeSites}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{formatDate(o.createdAt)}</TableCell>
-                    <TableCell><Badge variant={STATUS_VARIANT[o.status]}>{STATUS_LABEL[o.status]}</Badge></TableCell>
+                    <TableCell>
+                      <Badge variant={STATUS_VARIANT[o.status]}>{STATUS_LABEL[o.status]}</Badge>
+                      <PlanTag plan={o.plan} />
+                    </TableCell>
                     <TableCell>{actions(o)}</TableCell>
                   </TableRow>
                 ))}
@@ -213,6 +228,7 @@ function Businesses() {
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                   <Badge variant={STATUS_VARIANT[o.status]}>{STATUS_LABEL[o.status]}</Badge>
+                  <PlanTag plan={o.plan} />
                   <span>{o.counts.staff} staff</span>
                   <span>{o.counts.activeSites} sites</span>
                   <span>Joined {formatDate(o.createdAt)}</span>
@@ -224,7 +240,7 @@ function Businesses() {
       )}
 
       <AddBusinessDialog open={adding} onOpenChange={setAdding} onCreated={reload} />
-      <BusinessDetail id={viewing} onOpenChange={(open) => !open && setViewing(null)} />
+      <BusinessDetail id={viewing} onOpenChange={(open) => !open && setViewing(null)} onChanged={reload} />
     </>
   );
 }
