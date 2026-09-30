@@ -21,6 +21,7 @@ const officePages = {
   PayrollSheet: () => import('@/features/payroll/PayrollSheetPage'),
   Expenses: () => import('@/features/expenses/ExpensesPage'),
   Muster: () => import('@/features/reports/MusterPage'),
+  StaffReport: () => import('@/features/reports/StaffReportPage'),
   Reports: () => import('@/features/reports/ReportsPage'),
   Performance: () => import('@/features/performance/PerformancePage'),
   Settings: () => import('@/features/settings/SettingsPage'),
@@ -75,6 +76,7 @@ function OfficeRoutes() {
         <Route path="/payroll/:id" element={<O.PayrollSheet />} />
         <Route path="/expenses" element={<O.Expenses />} />
         <Route path="/reports/muster" element={<O.Muster />} />
+        <Route path="/reports/staff" element={<O.StaffReport />} />
         <Route path="/reports" element={<O.Reports />} />
         <Route path="/performance" element={<O.Performance />} />
         <Route path="/settings" element={<O.Settings />} />

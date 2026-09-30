@@ -16,6 +16,7 @@ import {
   Users,
   MessageSquare,
   Zap,
+  UserSearch,
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { formatDateLong } from '@/shared/lib/format';
@@ -51,6 +52,7 @@ const NAV_GROUPS = [
     label: 'Insights',
     items: [
       { to: '/reports', label: 'Reports', icon: BarChart3, end: true },
+      { to: '/reports/staff', label: 'Staff report', icon: UserSearch },
       { to: '/reports/muster', label: 'Muster roll', icon: ClipboardList },
       { to: '/performance', label: 'Performance', icon: Star },
     ],

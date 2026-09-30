@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { AlertCircle, CalendarDays, CreditCard, HandCoins, Pencil, Wallet } from 'lucide-react';
+import { AlertCircle, BarChart3, CalendarDays, CreditCard, HandCoins, Pencil, Wallet } from 'lucide-react';
 import { attendanceApi } from '@/features/attendance/api';
 import { staffApi } from '@/features/staff/api';
 import { paymentsApi } from '@/features/payments/api';
@@ -128,6 +128,7 @@ export default function StaffDetail() {
         actions={
           <>
             <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}><Pencil /> Edit</Button>
+            <Link to={`/reports/staff?staff=${id}`} className={buttonVariants({ variant: 'outline', size: 'sm' })}><BarChart3 /> Report</Link>
             <Button variant="outline" size="sm" onClick={() => setAdvanceOpen(true)}><HandCoins /> Give advance</Button>
             <Link to={payLink} className={cn(buttonVariants({ size: 'sm' }))}><CreditCard /> Pay wages</Link>
           </>
