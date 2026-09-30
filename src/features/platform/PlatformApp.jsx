@@ -17,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { PageHeader } from '@/shared/components/PageHeader';
 import { PageLoader } from '@/shared/components/PageLoader';
 import { StatTile } from '@/shared/components/StatTile';
+import { MotionPage } from '@/shared/components/Motion';
 import { EmptyState, ErrorState } from '@/shared/components/States';
 import { FilterTabs, RowActions, SearchInput, Toolbar } from '@/shared/components/Toolbar';
 import { useConfirm } from '@/shared/components/ConfirmDialog';
@@ -259,7 +260,7 @@ export default function PlatformApp() {
       </header>
       <main className="mx-auto max-w-6xl px-4 py-4 sm:py-6">
         <Routes>
-          <Route path="/" element={<Businesses />} />
+          <Route path="/" element={<MotionPage key="home"><Businesses /></MotionPage>} />
           <Route path="/account" element={<Account />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

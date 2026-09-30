@@ -24,6 +24,7 @@ import { useOrg } from '@/features/auth/AuthContext';
 import { buttonVariants } from '@/shared/ui/button';
 import { Sheet, SheetContent, SheetTitle } from '@/shared/ui/sheet';
 import { PageLoader } from '@/shared/components/PageLoader';
+import { MotionPage } from '@/shared/components/Motion';
 import { InstallApp, OfflineBanner } from '@/shared/components/AppStatus';
 import { UserMenu } from '@/features/auth/UserMenu';
 import { NotificationBell } from '@/features/notifications/NotificationBell';
@@ -202,7 +203,9 @@ export default function Layout() {
 
         <main className="mx-auto w-full max-w-[1400px] p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:p-6 lg:pb-8 print:p-0">
           <Suspense fallback={<PageLoader />}>
-            <Outlet key={location.pathname} />
+            <MotionPage key={location.pathname}>
+              <Outlet />
+            </MotionPage>
           </Suspense>
         </main>
       </div>

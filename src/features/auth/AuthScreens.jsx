@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Eye, EyeOff, KeyRound, Zap } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -7,24 +7,28 @@ import { Input } from '@/shared/ui/input';
 import { PhoneInput } from '@/shared/ui/number-inputs';
 import { Field } from '@/shared/components/Field';
 import { InstallApp } from '@/shared/components/AppStatus';
+import { useEntrance } from '@/shared/components/Motion';
 import { DeveloperLoginDialog, useDeveloperEntry } from '@/features/auth/DeveloperLogin';
 
 function AuthShell({ title, subtitle, children, footer, onLogoTap }) {
+  const ref = useRef(null);
+  useEntrance(ref);
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10">
+    <div ref={ref} className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center text-center">
           <span
+            data-enter-pop
             onClick={onLogoTap}
             className="flex h-12 w-12 select-none items-center justify-center rounded-xl bg-primary text-primary-foreground"
           >
             <Zap className="h-6 w-6" />
           </span>
-          <h1 className="mt-3 text-xl font-semibold">{title}</h1>
-          {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
+          <h1 data-enter className="mt-3 text-xl font-semibold">{title}</h1>
+          {subtitle && <p data-enter className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
         </div>
-        <div className="rounded-xl border border-border bg-card p-5 sm:p-6">{children}</div>
-        {footer && <div className="mt-4">{footer}</div>}
+        <div data-enter className="rounded-xl border border-border bg-card p-5 sm:p-6">{children}</div>
+        {footer && <div data-enter className="mt-4">{footer}</div>}
       </div>
     </div>
   );
