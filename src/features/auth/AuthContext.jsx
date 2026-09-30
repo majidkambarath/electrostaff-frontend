@@ -114,6 +114,12 @@ export function AuthProvider({ children, screens }) {
         signIn({ principal, organization });
         return principal;
       },
+      developerLogin: async (credentials) => {
+        const { token, principal } = await authApi.developerLogin(credentials);
+        setToken(token);
+        signIn({ principal, organization: null });
+        return principal;
+      },
       signup: async (details) => {
         const { token, principal } = await authApi.signup(details);
         setToken(token);

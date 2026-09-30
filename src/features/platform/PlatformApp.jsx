@@ -6,6 +6,7 @@ import { platformApi } from '@/features/platform/api';
 import { AddBusinessDialog } from '@/features/platform/components/AddBusinessDialog';
 import { ChangePasswordForm } from '@/features/auth/AuthScreens';
 import { UserMenu } from '@/features/auth/UserMenu';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useApi } from '@/shared/hooks/useApi';
 import { formatDate, formatNumber } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/button';
@@ -21,6 +22,7 @@ import { FilterTabs, RowActions, SearchInput, Toolbar } from '@/shared/component
 import { useConfirm } from '@/shared/components/ConfirmDialog';
 
 const STATUS_VARIANT = { active: 'success', suspended: 'danger' };
+const STATUS_LABEL = { active: 'Allowed', suspended: 'Blocked' };
 
 function BusinessDetail({ id, onOpenChange }) {
   const { data, loading, error, reload } = useApi(() => (id ? platformApi.get(id) : null), [id], { enabled: Boolean(id) });
@@ -98,17 +100,17 @@ function Businesses() {
   const toggle = async (o) => {
     const suspend = o.status === 'active';
     const ok = await confirm({
-      title: suspend ? `Suspend ${o.name}?` : `Reactivate ${o.name}?`,
+      title: suspend ? `Block access for ${o.name}?` : `Allow access for ${o.name}?`,
       description: suspend
-        ? 'The owner, office and staff are signed out and cannot sign in until it is reactivated. No data is deleted.'
-        : 'The business can sign in again.',
-      confirmLabel: suspend ? 'Suspend' : 'Reactivate',
+        ? 'The owner, office and staff are signed out and cannot sign in until you allow access again. No data is deleted.'
+        : 'The owner, office and staff can sign in again.',
+      confirmLabel: suspend ? 'Block access' : 'Allow access',
       destructive: suspend,
     });
     if (!ok) return;
     try {
       await platformApi.setStatus(o.id, suspend ? 'suspended' : 'active');
-      toast.success(suspend ? `${o.name} suspended` : `${o.name} is active again`);
+      toast.success(suspend ? `${o.name} blocked` : `${o.name} can sign in again`);
       reload();
     } catch (err) {
       toast.error(err.message);
@@ -123,7 +125,7 @@ function Businesses() {
       <DropdownMenuItem onSelect={() => setViewing(o.id)}><Eye /> View details</DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuItem onSelect={() => toggle(o)} className={o.status === 'active' ? 'text-red-600' : undefined}>
-        {o.status === 'active' ? <><PauseCircle /> Suspend</> : <><PlayCircle /> Reactivate</>}
+        {o.status === 'active' ? <><PauseCircle /> Block access</> : <><PlayCircle /> Allow access</>}
       </DropdownMenuItem>
     </RowActions>
   );
@@ -132,12 +134,12 @@ function Businesses() {
     <>
       <PageHeader
         title="Businesses"
-        description="Every business on ElectroStaff"
-        actions={<Button onClick={() => setAdding(true)}><Plus /> Add business</Button>}
+        description="Create businesses with their owner, and allow or block their access"
+        actions={<Button onClick={() => setAdding(true)}><Plus /> Create business</Button>}
       />
       <div className="mb-4 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
         <StatTile label="Businesses" value={formatNumber(overview.organizations)} hint={`${overview.newLast30Days} new in 30 days`} icon={Building2} tone="primary" />
-        <StatTile label="Suspended" value={formatNumber(overview.suspended)} hint={`${overview.active} active`} icon={PauseCircle} tone={overview.suspended ? 'danger' : 'default'} />
+        <StatTile label="Blocked" value={formatNumber(overview.suspended)} hint={`${overview.active} active`} icon={PauseCircle} tone={overview.suspended ? 'danger' : 'default'} />
         <StatTile label="Active staff" value={formatNumber(overview.staff)} hint={`${overview.staffLogins} use the staff app`} icon={Users} tone="success" />
         <StatTile label="Active sites" value={formatNumber(overview.activeSites)} icon={MapPin} tone="warning" />
       </div>
@@ -149,13 +151,13 @@ function Businesses() {
           options={[
             { value: 'all', label: 'All', count: orgs.length },
             { value: 'active', label: 'Active', count: overview.active },
-            { value: 'suspended', label: 'Suspended', count: overview.suspended },
+            { value: 'suspended', label: 'Blocked', count: overview.suspended },
           ]}
         />
       </Toolbar>
 
       {rows.length === 0 ? (
-        <EmptyState icon={Building2} title="No businesses found" description={orgs.length ? 'Try another search or filter.' : 'Businesses appear here when they sign up.'} />
+        <EmptyState icon={Building2} title="No businesses found" description={orgs.length ? 'Try another search or filter.' : 'Create the first business and its owner.'} />
       ) : (
         <>
           <div className="hidden rounded-lg border border-border md:block">
@@ -189,7 +191,7 @@ function Businesses() {
                     <TableCell className="text-right tabular-nums">{o.counts.staff}</TableCell>
                     <TableCell className="text-right tabular-nums">{o.counts.activeSites}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{formatDate(o.createdAt)}</TableCell>
-                    <TableCell><Badge variant={STATUS_VARIANT[o.status]}>{o.status}</Badge></TableCell>
+                    <TableCell><Badge variant={STATUS_VARIANT[o.status]}>{STATUS_LABEL[o.status]}</Badge></TableCell>
                     <TableCell>{actions(o)}</TableCell>
                   </TableRow>
                 ))}
@@ -209,7 +211,7 @@ function Businesses() {
                   {actions(o)}
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                  <Badge variant={STATUS_VARIANT[o.status]}>{o.status}</Badge>
+                  <Badge variant={STATUS_VARIANT[o.status]}>{STATUS_LABEL[o.status]}</Badge>
                   <span>{o.counts.staff} staff</span>
                   <span>{o.counts.activeSites} sites</span>
                   <span>Joined {formatDate(o.createdAt)}</span>
@@ -229,7 +231,7 @@ function Businesses() {
 function Account() {
   return (
     <>
-      <PageHeader title="Account" description="Your platform admin sign-in" backTo="/" />
+      <PageHeader title="Account" description="Your developer sign-in" backTo="/" />
       <div className="max-w-md rounded-lg border border-border bg-card p-4">
         <ChangePasswordForm />
       </div>
@@ -239,6 +241,7 @@ function Account() {
 
 // The platform portal: its own shell, separate from any business's office app.
 export default function PlatformApp() {
+  const { principal } = useAuth();
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur">
@@ -246,10 +249,10 @@ export default function PlatformApp() {
           <Link to="/" className="flex items-center gap-2 font-semibold">
             <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground"><Zap className="h-4 w-4" /></span>
             ElectroStaff
-            <Badge variant="info" className="gap-1"><ShieldCheck className="h-3 w-3" /> Platform</Badge>
+            <Badge variant="info" className="gap-1"><ShieldCheck className="h-3 w-3" /> Developer mode</Badge>
           </Link>
           <div className="flex items-center gap-2">
-            <span className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex"><Smartphone className="h-3.5 w-3.5" /> Operator console</span>
+            <span className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex"><Smartphone className="h-3.5 w-3.5" /> {principal?.username}</span>
             <UserMenu settingsPath="/account" />
           </div>
         </div>

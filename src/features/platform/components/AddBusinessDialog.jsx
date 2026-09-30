@@ -82,7 +82,7 @@ export function AddBusinessDialog({ open, onOpenChange, onCreated }) {
         ) : (
           <form onSubmit={submit} className="space-y-4">
             <DialogHeader>
-              <DialogTitle>Add a business</DialogTitle>
+              <DialogTitle>Create a business</DialogTitle>
               <DialogDescription>Creates the business and its owner login. A password is generated for the owner.</DialogDescription>
             </DialogHeader>
             <Field label="Business name" htmlFor="pb-name" required>

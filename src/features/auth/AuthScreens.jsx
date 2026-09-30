@@ -7,13 +7,17 @@ import { Input } from '@/shared/ui/input';
 import { PhoneInput } from '@/shared/ui/number-inputs';
 import { Field } from '@/shared/components/Field';
 import { InstallApp } from '@/shared/components/AppStatus';
+import { DeveloperLoginDialog, useDeveloperEntry } from '@/features/auth/DeveloperLogin';
 
-function AuthShell({ title, subtitle, children, footer }) {
+function AuthShell({ title, subtitle, children, footer, onLogoTap }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+          <span
+            onClick={onLogoTap}
+            className="flex h-12 w-12 select-none items-center justify-center rounded-xl bg-primary text-primary-foreground"
+          >
             <Zap className="h-6 w-6" />
           </span>
           <h1 className="mt-3 text-xl font-semibold">{title}</h1>
@@ -70,14 +74,24 @@ const useSubmit = (fn) => {
   return { busy, error, submit };
 };
 
-// Signed-out entry: sign in, or (when sign-up is open) create a new business. ?signup opens sign-up.
+// Signed-out entry: sign in (plus sign-up only when the server allows it). Businesses are normally
+// created by a developer: Ctrl+Shift+D or 7 taps on the logo opens developer mode.
 export function SignedOutScreen({ signupEnabled }) {
   const [mode, setMode] = useState(() =>
     signupEnabled && new URLSearchParams(window.location.search).has('signup') ? 'signup' : 'login'
   );
+  const [devOpen, setDevOpen, onLogoTap] = useDeveloperEntry();
   const switchTo = (next) => () => setMode(next);
-  if (mode === 'signup' && signupEnabled) return <SignupScreen onSignIn={switchTo('login')} />;
-  return <LoginScreen onCreate={signupEnabled ? switchTo('signup') : null} />;
+  return (
+    <>
+      {mode === 'signup' && signupEnabled ? (
+        <SignupScreen onSignIn={switchTo('login')} onLogoTap={onLogoTap} />
+      ) : (
+        <LoginScreen onCreate={signupEnabled ? switchTo('signup') : null} onLogoTap={onLogoTap} />
+      )}
+      <DeveloperLoginDialog open={devOpen} onOpenChange={setDevOpen} />
+    </>
+  );
 }
 
 function SwitchLink({ question, action, onClick }) {
@@ -91,7 +105,7 @@ function SwitchLink({ question, action, onClick }) {
   );
 }
 
-export function LoginScreen({ onCreate }) {
+export function LoginScreen({ onCreate, onLogoTap }) {
   const { login } = useAuth();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -104,6 +118,7 @@ export function LoginScreen({ onCreate }) {
     <AuthShell
       title="Sign in to ElectroStaff"
       subtitle="Owners and staff use the same sign-in"
+      onLogoTap={onLogoTap}
       footer={
         <div className="space-y-3">
           {onCreate && <SwitchLink question="New business?" action="Create your account" onClick={onCreate} />}
@@ -126,7 +141,7 @@ export function LoginScreen({ onCreate }) {
   );
 }
 
-export function SignupScreen({ onSignIn }) {
+export function SignupScreen({ onSignIn, onLogoTap }) {
   const { signup } = useAuth();
   const [form, setForm] = useState({ businessName: '', name: '', phone: '', password: '', confirm: '' });
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -140,6 +155,7 @@ export function SignupScreen({ onSignIn }) {
     <AuthShell
       title="Create your business"
       subtitle="Set up the owner account. Add sites, staff and their app logins next."
+      onLogoTap={onLogoTap}
       footer={<SwitchLink question="Already registered?" action="Sign in" onClick={onSignIn} />}
     >
       <form onSubmit={submit} className="space-y-4">
