@@ -1,4 +1,5 @@
-import { lazy, useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
+import { PageLoader } from '@/shared/components/PageLoader';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AdminLayout from '@/app/layouts/AdminLayout';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -35,6 +36,8 @@ const staffPages = {
   Requests: () => import('@/features/portal/PortalRequests'),
   Profile: () => import('@/features/portal/PortalProfile'),
 };
+
+const PlatformApp = lazy(() => import('@/features/platform/PlatformApp'));
 
 const O = Object.fromEntries(Object.entries(officePages).map(([k, load]) => [k, lazy(load)]));
 const S = Object.fromEntries(Object.entries(staffPages).map(([k, load]) => [k, lazy(load)]));
@@ -100,8 +103,14 @@ function StaffRoutes() {
   );
 }
 
-// Only rendered once signed in (AuthProvider shows setup / sign-in screens before that).
+// Only rendered once signed in (AuthProvider shows the sign-in / sign-up screens before that).
 export default function App() {
   const { principal } = useAuth();
-  return <BrowserRouter>{principal.role === 'staff' ? <StaffRoutes /> : <OfficeRoutes />}</BrowserRouter>;
+  const routes = { staff: <StaffRoutes />, platform: (
+      <Suspense fallback={<PageLoader />}>
+        <PlatformApp />
+      </Suspense>
+    ),
+  }[principal.role] || <OfficeRoutes />;
+  return <BrowserRouter>{routes}</BrowserRouter>;
 }

@@ -6,6 +6,7 @@ import { paymentsApi } from '@/features/payments/api';
 import { cn } from '@/shared/lib/utils';
 import { formatCurrency, formatDate, monthStartISO, shiftISODate, toISODate, todayISO } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/button';
+import { AmountInput } from '@/shared/ui/number-inputs';
 import { Input, Textarea } from '@/shared/ui/input';
 import { Sheet, SheetBody, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/shared/ui/sheet';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
@@ -261,10 +262,10 @@ export function PaymentSheet({ open, onOpenChange, staffList, initial, onDone })
 
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Bonus (₹)" htmlFor="pay-bonus">
-                    <Input id="pay-bonus" type="number" inputMode="numeric" min="0" value={bonus} onChange={(e) => setBonus(e.target.value)} placeholder="0" />
+                    <AmountInput id="pay-bonus" value={bonus} onChange={setBonus} placeholder="0" />
                   </Field>
                   <Field label="Deductions (₹)" htmlFor="pay-deduct" hint="Damage, tools, etc.">
-                    <Input id="pay-deduct" type="number" inputMode="numeric" min="0" value={deductions} onChange={(e) => setDeductions(e.target.value)} placeholder="0" />
+                    <AmountInput id="pay-deduct" value={deductions} onChange={setDeductions} placeholder="0" />
                   </Field>
                 </div>
 
@@ -275,7 +276,7 @@ export function PaymentSheet({ open, onOpenChange, staffList, initial, onDone })
                     hint={`Outstanding advance: ${formatCurrency(preview.advanceBalance)}`}
                   >
                     <div className="flex gap-2">
-                      <Input id="pay-advance" type="number" inputMode="numeric" min="0" max={maxAdvance} value={advance} onChange={(e) => setAdvance(e.target.value)} placeholder="0" />
+                      <AmountInput id="pay-advance" value={advance} onChange={setAdvance} placeholder="0" />
                       <Button type="button" variant="outline" onClick={() => setAdvance(String(maxAdvance))} disabled={maxAdvance === 0}>
                         Recover {formatCurrency(maxAdvance)}
                       </Button>

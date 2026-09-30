@@ -241,9 +241,8 @@ export default function Staff() {
           reload();
           if (!credentials) return;
           setAccess({ staff: { ...saved, portalEnabled: true }, credentials });
-          if (!sendLoginOnWhatsApp({ ...credentials, name: credentials.name || saved.name }, businessLabel(org))) {
-            toast.info('Tap “Send on WhatsApp” to send the login');
-          }
+          // Registration ends in the worker's WhatsApp chat with the login typed in.
+          sendLoginOnWhatsApp({ ...credentials, name: credentials.name || saved.name }, businessLabel(org), { navigate: true });
         }}
       />
       <StaffAccessDialog

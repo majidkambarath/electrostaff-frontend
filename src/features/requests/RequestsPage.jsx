@@ -8,7 +8,8 @@ import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 import { Checkbox } from '@/shared/ui/checkbox';
-import { Input, Textarea } from '@/shared/ui/input';
+import { AmountInput } from '@/shared/ui/number-inputs';
+import { Textarea } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
 import { PageHeader } from '@/shared/components/PageHeader';
@@ -80,7 +81,7 @@ function DecideDialog({ request, decision, onOpenChange, onDone }) {
             {record && (
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Amount (₹)" htmlFor="rq-amount">
-                  <Input id="rq-amount" type="number" inputMode="numeric" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                  <AmountInput id="rq-amount" value={amount} onChange={setAmount} />
                 </Field>
                 <Field label="Given by">
                   <div className="grid grid-cols-3 gap-1" role="radiogroup" aria-label="Given by">

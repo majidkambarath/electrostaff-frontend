@@ -7,6 +7,7 @@ import { expensesApi } from '@/features/expenses/api';
 import { receiptsApi } from '@/features/sites/api';
 import { EXPENSE_CATEGORY_LABELS, RECEIPT_MODE_LABELS, PAYMENT_MODE_LABELS, formatCurrency, toISODate, todayISO } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/button';
+import { AmountInput } from '@/shared/ui/number-inputs';
 import { Input, Textarea } from '@/shared/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Sheet, SheetBody, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/shared/ui/sheet';
@@ -111,7 +112,7 @@ export function ExpenseFormSheet({ open, onOpenChange, expense, site, sites = []
                 <ModeSelect control={control} name="category" labels={CATEGORY_OPTIONS} />
               </Field>
               <Field label="Amount (₹)" htmlFor="exp-amount" required error={errors.amount?.message}>
-                <Input id="exp-amount" type="number" inputMode="numeric" min="1" {...register('amount')} />
+                <Controller control={control} name="amount" render={({ field }) => <AmountInput id="exp-amount" {...field} />} />
               </Field>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -186,7 +187,7 @@ export function ReceiptFormSheet({ open, onOpenChange, site, due, onSaved }) {
           <SheetBody className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <Field label="Amount (₹)" htmlFor="rc-amount" required error={errors.amount?.message}>
-                <Input id="rc-amount" type="number" inputMode="numeric" min="1" autoFocus {...register('amount')} />
+                <Controller control={control} name="amount" render={({ field }) => <AmountInput id="rc-amount" autoFocus {...field} />} />
               </Field>
               <Field label="Date" htmlFor="rc-date" required error={errors.date?.message}>
                 <Input id="rc-date" type="date" max={todayISO()} {...register('date')} />

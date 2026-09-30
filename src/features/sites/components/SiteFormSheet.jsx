@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { sitesApi } from '@/features/sites/api';
 import { toISODate, todayISO } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/button';
+import { AmountInput } from '@/shared/ui/number-inputs';
 import { Input, Textarea } from '@/shared/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Sheet, SheetBody, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/shared/ui/sheet';
@@ -87,7 +88,7 @@ export function SiteFormSheet({ open, onOpenChange, site, onSaved }) {
               error={errors.contractValue?.message}
               hint="Agreed job amount with the client — used for client dues and profit"
             >
-              <Input id="site-contract" type="number" inputMode="numeric" min="0" placeholder="0" {...register('contractValue')} />
+              <Controller control={control} name="contractValue" render={({ field }) => <AmountInput id="site-contract" placeholder="0" {...field} />} />
             </Field>
             <Field label="Address" htmlFor="site-address">
               <Input id="site-address" {...register('address')} />

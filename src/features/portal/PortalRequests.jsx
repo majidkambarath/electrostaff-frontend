@@ -8,7 +8,8 @@ import { cn } from '@/shared/lib/utils';
 import { formatCurrency, formatDate } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
-import { Input, Textarea } from '@/shared/ui/input';
+import { AmountInput } from '@/shared/ui/number-inputs';
+import { Textarea } from '@/shared/ui/input';
 import { Sheet, SheetBody, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/shared/ui/sheet';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { PageLoader } from '@/shared/components/PageLoader';
@@ -72,7 +73,7 @@ function RequestSheet({ open, initialType, onOpenChange, onDone }) {
             </div>
             {type === 'advance' && (
               <Field label="Amount (₹)" htmlFor="rq-amount">
-                <Input id="rq-amount" type="number" inputMode="numeric" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+                <AmountInput id="rq-amount" value={amount} onChange={setAmount} required />
               </Field>
             )}
             <Field label={type === 'advance' ? 'Reason (optional)' : 'What do you need?'} htmlFor="rq-note">

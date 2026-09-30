@@ -49,7 +49,7 @@ function Splash({ error, onRetry }) {
   );
 }
 
-// Session state machine: loading -> setup | signed-out | signed-in.
+// Session state machine: loading -> signed-out (sign in / create business) | signed-in.
 export function AuthProvider({ children, screens }) {
   const [state, setState] = useState({ status: 'loading' });
 
@@ -63,7 +63,7 @@ export function AuthProvider({ children, screens }) {
     setToken('');
     cache.write(null);
     clearApiCache();
-    setState({ status: 'signed-out' });
+    setState((s) => ({ status: 'signed-out', signupEnabled: s.signupEnabled ?? true }));
     if (message) toast.info(message);
   }, []);
 
@@ -75,8 +75,8 @@ export function AuthProvider({ children, screens }) {
         signIn({ principal, organization });
         return;
       }
-      const { setupRequired } = await authApi.status();
-      setState({ status: setupRequired ? 'setup' : 'signed-out' });
+      const { signupEnabled } = await authApi.status();
+      setState({ status: 'signed-out', signupEnabled });
     } catch (error) {
       if (error.network && getToken() && cache.read()) {
         setState({ status: 'signed-in', offline: true, ...cache.read() });
@@ -114,8 +114,8 @@ export function AuthProvider({ children, screens }) {
         signIn({ principal, organization });
         return principal;
       },
-      setup: async (details) => {
-        const { token, principal } = await authApi.setup(details);
+      signup: async (details) => {
+        const { token, principal } = await authApi.signup(details);
         setToken(token);
         const { organization } = await authApi.me();
         signIn({ principal, organization });
@@ -133,11 +133,10 @@ export function AuthProvider({ children, screens }) {
   if (state.status === 'loading') return <Splash />;
   if (state.status === 'error') return <Splash error={state.error} onRetry={bootstrap} />;
 
-  const { Setup, Login, ChangePassword } = screens;
+  const { SignedOut, ChangePassword } = screens;
   return (
     <AuthContext.Provider value={value}>
-      {state.status === 'setup' && <Setup />}
-      {state.status === 'signed-out' && <Login />}
+      {state.status === 'signed-out' && <SignedOut signupEnabled={state.signupEnabled !== false} />}
       {state.status === 'signed-in' && (state.principal?.mustChangePassword ? <ChangePassword forced /> : children)}
     </AuthContext.Provider>
   );

@@ -4,6 +4,7 @@ import { Eye, EyeOff, KeyRound, Zap } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
+import { PhoneInput } from '@/shared/ui/number-inputs';
 import { Field } from '@/shared/components/Field';
 import { InstallApp } from '@/shared/components/AppStatus';
 
@@ -69,7 +70,28 @@ const useSubmit = (fn) => {
   return { busy, error, submit };
 };
 
-export function LoginScreen() {
+// Signed-out entry: sign in, or (when sign-up is open) create a new business. ?signup opens sign-up.
+export function SignedOutScreen({ signupEnabled }) {
+  const [mode, setMode] = useState(() =>
+    signupEnabled && new URLSearchParams(window.location.search).has('signup') ? 'signup' : 'login'
+  );
+  const switchTo = (next) => () => setMode(next);
+  if (mode === 'signup' && signupEnabled) return <SignupScreen onSignIn={switchTo('login')} />;
+  return <LoginScreen onCreate={signupEnabled ? switchTo('signup') : null} />;
+}
+
+function SwitchLink({ question, action, onClick }) {
+  return (
+    <p className="text-center text-sm text-muted-foreground">
+      {question}{' '}
+      <button type="button" onClick={onClick} className="tap font-medium text-primary underline-offset-4 hover:underline">
+        {action}
+      </button>
+    </p>
+  );
+}
+
+export function LoginScreen({ onCreate }) {
   const { login } = useAuth();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -79,10 +101,19 @@ export function LoginScreen() {
   });
 
   return (
-    <AuthShell title="Sign in to ElectroStaff" subtitle="Owners and staff use the same sign-in" footer={<InstallApp />}>
+    <AuthShell
+      title="Sign in to ElectroStaff"
+      subtitle="Owners and staff use the same sign-in"
+      footer={
+        <div className="space-y-3">
+          {onCreate && <SwitchLink question="New business?" action="Create your account" onClick={onCreate} />}
+          <InstallApp />
+        </div>
+      }
+    >
       <form onSubmit={submit} className="space-y-4">
         <Field label="Mobile number" htmlFor="login-phone">
-          <Input id="login-phone" type="tel" inputMode="tel" autoComplete="username" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="98450 12345" required />
+          <PhoneInput id="login-phone" autoComplete="username" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="9845012345" required />
         </Field>
         <Field label="Password" htmlFor="login-password">
           <PasswordInput id="login-password" value={password} onChange={setPassword} autoComplete="current-password" />
@@ -95,18 +126,22 @@ export function LoginScreen() {
   );
 }
 
-export function SetupScreen() {
-  const { setup } = useAuth();
+export function SignupScreen({ onSignIn }) {
+  const { signup } = useAuth();
   const [form, setForm] = useState({ businessName: '', name: '', phone: '', password: '', confirm: '' });
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
   const { busy, error, submit } = useSubmit(async () => {
     if (form.password !== form.confirm) throw new Error('Passwords do not match');
-    await setup({ businessName: form.businessName, name: form.name, phone: form.phone, password: form.password });
+    await signup({ businessName: form.businessName, name: form.name, phone: form.phone, password: form.password });
     toast.success('Your business is ready');
   });
 
   return (
-    <AuthShell title="Set up your business" subtitle="Create the owner account. You can add staff logins later.">
+    <AuthShell
+      title="Create your business"
+      subtitle="Set up the owner account. Add sites, staff and their app logins next."
+      footer={<SwitchLink question="Already registered?" action="Sign in" onClick={onSignIn} />}
+    >
       <form onSubmit={submit} className="space-y-4">
         <Field label="Business name" htmlFor="setup-business">
           <Input id="setup-business" value={form.businessName} onChange={set('businessName')} placeholder="e.g. Sri Murugan Electricals" required />
@@ -115,7 +150,7 @@ export function SetupScreen() {
           <Input id="setup-name" autoComplete="name" value={form.name} onChange={set('name')} required />
         </Field>
         <Field label="Mobile number" htmlFor="setup-phone" hint="You will sign in with this number">
-          <Input id="setup-phone" type="tel" inputMode="tel" autoComplete="username" value={form.phone} onChange={set('phone')} required />
+          <PhoneInput id="setup-phone" autoComplete="username" value={form.phone} onChange={set('phone')} required />
         </Field>
         <Field label="Password" htmlFor="setup-password" hint="At least 6 characters">
           <PasswordInput id="setup-password" value={form.password} onChange={(v) => setForm((f) => ({ ...f, password: v }))} autoComplete="new-password" />
@@ -124,7 +159,7 @@ export function SetupScreen() {
           <PasswordInput id="setup-confirm" value={form.confirm} onChange={(v) => setForm((f) => ({ ...f, confirm: v }))} autoComplete="new-password" />
         </Field>
         {error && <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-        <Button type="submit" className="w-full" disabled={busy}>{busy ? 'Creating…' : 'Create owner account'}</Button>
+        <Button type="submit" className="w-full" disabled={busy}>{busy ? 'Creating…' : 'Create business'}</Button>
       </form>
     </AuthShell>
   );

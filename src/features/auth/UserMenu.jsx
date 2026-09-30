@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
 
-const ROLE = { owner: 'Owner', admin: 'Admin', staff: 'Staff' };
+const ROLE = { owner: 'Owner', admin: 'Admin', staff: 'Staff', platform: 'Platform admin' };
 
 // Signed-in person with account actions. `settingsPath` points to where the password form lives.
 export function UserMenu({ settingsPath }) {
