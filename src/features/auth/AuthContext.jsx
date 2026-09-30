@@ -63,7 +63,7 @@ export function AuthProvider({ children, screens }) {
     setToken('');
     cache.write(null);
     clearApiCache();
-    setState((s) => ({ status: 'signed-out', signupEnabled: s.signupEnabled ?? true }));
+    setState((s) => ({ status: 'signed-out', signupEnabled: s.signupEnabled === true }));
     if (message) toast.info(message);
   }, []);
 
@@ -76,7 +76,7 @@ export function AuthProvider({ children, screens }) {
         return;
       }
       const { signupEnabled } = await authApi.status();
-      setState({ status: 'signed-out', signupEnabled });
+      setState({ status: 'signed-out', signupEnabled: signupEnabled === true });
     } catch (error) {
       if (error.network && getToken() && cache.read()) {
         setState({ status: 'signed-in', offline: true, ...cache.read() });
@@ -142,7 +142,7 @@ export function AuthProvider({ children, screens }) {
   const { SignedOut, ChangePassword } = screens;
   return (
     <AuthContext.Provider value={value}>
-      {state.status === 'signed-out' && <SignedOut signupEnabled={state.signupEnabled !== false} />}
+      {state.status === 'signed-out' && <SignedOut signupEnabled={state.signupEnabled === true} />}
       {state.status === 'signed-in' && (state.principal?.mustChangePassword ? <ChangePassword forced /> : children)}
     </AuthContext.Provider>
   );
