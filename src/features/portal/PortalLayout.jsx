@@ -7,6 +7,7 @@ import { UserMenu } from '@/features/auth/UserMenu';
 import { NotificationBell } from '@/features/notifications/NotificationBell';
 import { OfflineBanner } from '@/shared/components/AppStatus';
 import { PageLoader } from '@/shared/components/PageLoader';
+import { MotionPage } from '@/shared/components/Motion';
 
 const TABS = [
   { to: '/me', label: 'Home', icon: Home, end: true },
@@ -41,7 +42,9 @@ export default function PortalLayout() {
 
       <main className="mx-auto w-full max-w-2xl p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] print:max-w-none print:p-0">
         <Suspense fallback={<PageLoader />}>
-          <Outlet key={location.pathname} />
+          <MotionPage key={location.pathname}>
+              <Outlet />
+            </MotionPage>
         </Suspense>
       </main>
 

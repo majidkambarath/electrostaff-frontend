@@ -9,4 +9,6 @@ export const staffApi = {
   // Staff app login: { password } or { generate: true }; returns the plain password once.
   grantAccess: (id, payload) => request(`/staff/${id}/access`, json('POST', payload)),
   revokeAccess: (id) => request(`/staff/${id}/access`, { method: 'DELETE' }),
+  // Bulk add: returns { created, skipped: [{ row, name, reason }] }.
+  importMany: (rows) => request('/staff/import', json('POST', { rows })),
 };

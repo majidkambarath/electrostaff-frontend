@@ -5,42 +5,17 @@ import { reportsApi } from '@/features/reports/api';
 import { useApi } from '@/shared/hooks/useApi';
 import { cn } from '@/shared/lib/utils';
 import { downloadCsv } from '@/shared/lib/csv';
-import {
-  ROLE_LABELS,
-  formatCurrency,
-  formatDate,
-  formatNumber,
-  monthStartISO,
-  shiftISODate,
-  toISODate,
-  todayISO,
-} from '@/shared/lib/format';
+import { ROLE_LABELS, formatCurrency, formatDate, formatNumber } from '@/shared/lib/format';
+import { buildRangePresets } from '@/shared/lib/dateRanges';
+import { DateRangeBar } from '@/shared/components/DateRangeBar';
 import { Button, buttonVariants } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
-import { Input } from '@/shared/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { PageLoader } from '@/shared/components/PageLoader';
 import { StatTile } from '@/shared/components/StatTile';
 import { EmptyState, ErrorState } from '@/shared/components/States';
-
-const buildPresets = () => {
-  const d = new Date();
-  const today = todayISO();
-  return [
-    { key: 'this-month', label: 'This month', from: monthStartISO(), to: today },
-    {
-      key: 'last-month',
-      label: 'Last month',
-      from: toISODate(new Date(d.getFullYear(), d.getMonth() - 1, 1)),
-      to: toISODate(new Date(d.getFullYear(), d.getMonth(), 0)),
-    },
-    { key: '30d', label: 'Last 30 days', from: shiftISODate(today, -29), to: today },
-    { key: '90d', label: 'Last 90 days', from: shiftISODate(today, -89), to: today },
-    { key: 'year', label: 'This year', from: `${d.getFullYear()}-01-01`, to: today },
-  ];
-};
 
 const STAFF_COLUMNS = [
   { label: 'Staff', value: (r) => r.staff.name },
@@ -71,7 +46,7 @@ const SITE_COLUMNS = [
 ];
 
 export default function Reports() {
-  const presets = useMemo(buildPresets, []);
+  const presets = useMemo(buildRangePresets, []);
   const [range, setRange] = useState({ key: 'this-month', from: presets[0].from, to: presets[0].to });
   const [tab, setTab] = useState('staff');
   const valid = range.from && range.to && range.from <= range.to;
@@ -88,45 +63,7 @@ export default function Reports() {
     else downloadCsv(`labour-by-site_${suffix}.csv`, SITE_COLUMNS, data.bySite);
   };
 
-  const filters = (
-    <div className="flex flex-col gap-2 print:hidden lg:flex-row lg:items-center lg:justify-between">
-      <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
-        {presets.map((p) => (
-          <button
-            key={p.key}
-            type="button"
-            onClick={() => setRange({ key: p.key, from: p.from, to: p.to })}
-            className={cn(
-              'h-10 shrink-0 rounded-full border border-border px-3.5 text-sm font-medium sm:h-8 sm:px-3 sm:text-xs text-muted-foreground hover:bg-muted hover:text-foreground',
-              range.key === p.key && 'border-primary bg-primary/10 text-primary'
-            )}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
-      <div className="flex items-center gap-2">
-        <Input
-          type="date"
-          aria-label="From"
-          value={range.from}
-          max={range.to}
-          onChange={(e) => setRange((r) => ({ ...r, key: 'custom', from: e.target.value }))}
-          className="sm:w-40"
-        />
-        <span className="text-sm text-muted-foreground">to</span>
-        <Input
-          type="date"
-          aria-label="To"
-          value={range.to}
-          min={range.from}
-          max={todayISO()}
-          onChange={(e) => setRange((r) => ({ ...r, key: 'custom', to: e.target.value }))}
-          className="sm:w-40"
-        />
-      </div>
-    </div>
-  );
+  const filters = <DateRangeBar presets={presets} range={range} onChange={setRange} />;
 
   const header = (
     <PageHeader
@@ -200,7 +137,7 @@ export default function Reports() {
                       {data.byStaff.map((r) => (
                         <TableRow key={r.staff._id}>
                           <TableCell>
-                            <Link to={`/staff/${r.staff._id}`} className="tap font-medium hover:underline">{r.staff.name}</Link>
+                            <Link to={`/reports/staff?staff=${r.staff._id}&from=${range.from}&to=${range.to}`} className="tap font-medium hover:underline">{r.staff.name}</Link>
                             <p className="text-xs text-muted-foreground">{formatCurrency(r.staff.dailyWage)}/day</p>
                           </TableCell>
                           <TableCell className="text-right">{r.present}</TableCell>

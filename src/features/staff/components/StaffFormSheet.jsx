@@ -7,6 +7,8 @@ import { staffApi } from '@/features/staff/api';
 import { ROLE_LABELS, toISODate, todayISO } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/button';
 import { Input, Textarea } from '@/shared/ui/input';
+import { AmountInput, PhoneInput } from '@/shared/ui/number-inputs';
+import { cleanPhone } from '@/shared/lib/numberInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Sheet, SheetBody, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/shared/ui/sheet';
 import { Field } from '@/shared/components/Field';
@@ -19,7 +21,7 @@ const schema = z.object({
   phone: z
     .string()
     .trim()
-    .regex(/^[+\d][\d\s-]{6,15}$/, 'Enter a valid phone number'),
+    .regex(/^\d{10}$/, 'Enter a 10-digit mobile number'),
   email: z.union([z.literal(''), z.string().trim().email('Enter a valid email')]),
   role: z.enum(['electrician', 'helper', 'supervisor', 'apprentice', 'other']),
   dailyWage: z.coerce.number({ error: 'Enter the daily wage' }).positive('Daily wage must be more than 0'),
@@ -40,7 +42,7 @@ const schema = z.object({
 
 const toForm = (s) => ({
   name: s?.name || '',
-  phone: s?.phone || '',
+  phone: s?.phone ? cleanPhone(s.phone) : '',
   email: s?.email || '',
   role: s?.role || 'helper',
   dailyWage: s?.dailyWage ?? '',
@@ -103,7 +105,7 @@ export function StaffFormSheet({ open, onOpenChange, staff, onSaved }) {
             </Field>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Phone" htmlFor="staff-phone" required error={errors.phone?.message}>
-                <Input id="staff-phone" type="tel" inputMode="tel" {...register('phone')} />
+                <PhoneInput id="staff-phone" {...register('phone')} />
               </Field>
               <Field label="Email" htmlFor="staff-email" error={errors.email?.message}>
                 <Input id="staff-email" type="email" {...register('email')} />
@@ -127,7 +129,11 @@ export function StaffFormSheet({ open, onOpenChange, staff, onSaved }) {
                 />
               </Field>
               <Field label="Daily wage (₹)" htmlFor="staff-wage" required error={errors.dailyWage?.message}>
-                <Input id="staff-wage" type="number" inputMode="numeric" min="0" step="1" {...register('dailyWage')} />
+                <Controller
+                  control={control}
+                  name="dailyWage"
+                  render={({ field }) => <AmountInput id="staff-wage" {...field} />}
+                />
               </Field>
             </div>
             <Field
@@ -136,7 +142,11 @@ export function StaffFormSheet({ open, onOpenChange, staff, onSaved }) {
               error={errors.otRate?.message}
               hint={`Leave blank to use daily wage ÷ 8${wage ? ` (₹${Math.round(wage / 8)}/hour)` : ''}`}
             >
-              <Input id="staff-ot" type="number" inputMode="numeric" min="0" step="1" placeholder={wage ? String(Math.round(wage / 8)) : ''} {...register('otRate')} />
+              <Controller
+                control={control}
+                name="otRate"
+                render={({ field }) => <AmountInput id="staff-ot" placeholder={wage ? String(Math.round(wage / 8)) : ''} {...field} />}
+              />
             </Field>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Join date" htmlFor="staff-join" required error={errors.joinDate?.message}>

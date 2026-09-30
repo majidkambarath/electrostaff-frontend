@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { cn } from '@/shared/lib/utils';
+import { AnimatedNumber } from '@/shared/components/Motion';
 
 const TONES = {
   default: 'bg-muted text-muted-foreground',
@@ -14,7 +15,9 @@ export function StatTile({ label, value, hint, icon: Icon, tone = 'default', to,
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
         <p className="text-xs font-medium text-muted-foreground">{label}</p>
-        <p className="mt-0.5 truncate text-lg font-semibold tracking-tight text-foreground sm:mt-1 sm:text-xl">{value}</p>
+        <p className="mt-0.5 truncate text-lg font-semibold tracking-tight tabular-nums text-foreground sm:mt-1 sm:text-xl">
+          {typeof value === 'string' || typeof value === 'number' ? <AnimatedNumber value={value} /> : value}
+        </p>
         {hint && <p className="mt-0.5 truncate text-xs text-muted-foreground">{hint}</p>}
       </div>
       {Icon && (

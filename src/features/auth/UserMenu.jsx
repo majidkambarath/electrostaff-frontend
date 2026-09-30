@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
 
-const ROLE = { owner: 'Owner', admin: 'Admin', staff: 'Staff' };
+const ROLE = { owner: 'Owner', admin: 'Admin', staff: 'Staff', platform: 'Developer' };
 
 // Signed-in person with account actions. `settingsPath` points to where the password form lives.
 export function UserMenu({ settingsPath }) {
@@ -35,7 +35,7 @@ export function UserMenu({ settingsPath }) {
         <DropdownMenuLabel className="text-sm text-foreground">
           {principal?.name}
           <span className="block text-xs font-normal text-muted-foreground">
-            {ROLE[principal?.role]} · {principal?.phone}
+            {ROLE[principal?.role]} · {principal?.phone || principal?.username}
           </span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

@@ -6,10 +6,12 @@ import { toast } from 'sonner';
 import { sitesApi } from '@/features/sites/api';
 import { toISODate, todayISO } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/button';
+import { AmountInput } from '@/shared/ui/number-inputs';
 import { Input, Textarea } from '@/shared/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Sheet, SheetBody, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/shared/ui/sheet';
 import { Field } from '@/shared/components/Field';
+import { GeofenceField } from '@/features/sites/components/GeofenceField';
 
 const schema = z
   .object({
@@ -22,10 +24,15 @@ const schema = z
     status: z.enum(['active', 'onhold', 'completed']),
     contractValue: z.coerce.number({ error: 'Enter an amount' }).min(0, 'Amount can’t be negative'),
     notes: z.string().trim().optional(),
+    geofence: z.object({ lat: z.any(), lng: z.any(), radius: z.number() }).nullable(),
   })
   .refine((v) => !v.endDate || v.endDate >= v.startDate, {
     path: ['endDate'],
     message: 'End date must be after the start date',
+  })
+  .refine((v) => !v.geofence || (v.geofence.lat !== '' && v.geofence.lng !== ''), {
+    path: ['geofence'],
+    message: 'Set the site location, or untick the check-in rule',
   });
 
 const toForm = (site) => ({
@@ -38,6 +45,7 @@ const toForm = (site) => ({
   status: site?.status || 'active',
   contractValue: site?.contractValue || '',
   notes: site?.notes || '',
+  geofence: site?.geofence?.lat !== undefined && site?.geofence?.lat !== null ? site.geofence : null,
 });
 
 export function SiteFormSheet({ open, onOpenChange, site, onSaved }) {
@@ -87,7 +95,7 @@ export function SiteFormSheet({ open, onOpenChange, site, onSaved }) {
               error={errors.contractValue?.message}
               hint="Agreed job amount with the client — used for client dues and profit"
             >
-              <Input id="site-contract" type="number" inputMode="numeric" min="0" placeholder="0" {...register('contractValue')} />
+              <Controller control={control} name="contractValue" render={({ field }) => <AmountInput id="site-contract" placeholder="0" {...field} />} />
             </Field>
             <Field label="Address" htmlFor="site-address">
               <Input id="site-address" {...register('address')} />
@@ -115,6 +123,9 @@ export function SiteFormSheet({ open, onOpenChange, site, onSaved }) {
                   </Select>
                 )}
               />
+            </Field>
+            <Field label="Check-in location" error={errors.geofence?.message}>
+              <Controller control={control} name="geofence" render={({ field }) => <GeofenceField value={field.value} onChange={field.onChange} />} />
             </Field>
             <Field label="Notes" htmlFor="site-notes">
               <Textarea id="site-notes" rows={3} {...register('notes')} />

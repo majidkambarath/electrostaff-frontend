@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { advancesApi } from '@/features/advances/api';
 import { formatCurrency, todayISO } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/button';
+import { AmountInput } from '@/shared/ui/number-inputs';
 import { Input, Textarea } from '@/shared/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Sheet, SheetBody, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/shared/ui/sheet';
@@ -66,7 +67,7 @@ export function AdvanceFormSheet({ open, onOpenChange, staffList = [], staff, on
             )}
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Amount (₹)" htmlFor="adv-amount" required error={errors.amount?.message}>
-                <Input id="adv-amount" type="number" inputMode="numeric" min="1" autoFocus={fixedStaff} {...register('amount')} />
+                <Controller control={control} name="amount" render={({ field }) => <AmountInput id="adv-amount" autoFocus={fixedStaff} {...field} />} />
               </Field>
               <Field label="Date" htmlFor="adv-date" required error={errors.date?.message}>
                 <Input id="adv-date" type="date" max={todayISO()} {...register('date')} />

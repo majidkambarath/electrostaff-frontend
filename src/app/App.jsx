@@ -1,4 +1,5 @@
-import { lazy, useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
+import { PageLoader } from '@/shared/components/PageLoader';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AdminLayout from '@/app/layouts/AdminLayout';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -20,6 +21,7 @@ const officePages = {
   PayrollSheet: () => import('@/features/payroll/PayrollSheetPage'),
   Expenses: () => import('@/features/expenses/ExpensesPage'),
   Muster: () => import('@/features/reports/MusterPage'),
+  StaffReport: () => import('@/features/reports/StaffReportPage'),
   Reports: () => import('@/features/reports/ReportsPage'),
   Performance: () => import('@/features/performance/PerformancePage'),
   Settings: () => import('@/features/settings/SettingsPage'),
@@ -35,6 +37,14 @@ const staffPages = {
   Requests: () => import('@/features/portal/PortalRequests'),
   Profile: () => import('@/features/portal/PortalProfile'),
 };
+
+const supervisorPages = {
+  Attendance: officePages.Attendance,
+  Account: () => import('@/features/settings/AccountPage'),
+};
+const V = Object.fromEntries(Object.entries(supervisorPages).map(([k, load]) => [k, lazy(load)]));
+
+const PlatformApp = lazy(() => import('@/features/platform/PlatformApp'));
 
 const O = Object.fromEntries(Object.entries(officePages).map(([k, load]) => [k, lazy(load)]));
 const S = Object.fromEntries(Object.entries(staffPages).map(([k, load]) => [k, lazy(load)]));
@@ -72,11 +82,26 @@ function OfficeRoutes() {
         <Route path="/payroll/:id" element={<O.PayrollSheet />} />
         <Route path="/expenses" element={<O.Expenses />} />
         <Route path="/reports/muster" element={<O.Muster />} />
+        <Route path="/reports/staff" element={<O.StaffReport />} />
         <Route path="/reports" element={<O.Reports />} />
         <Route path="/performance" element={<O.Performance />} />
         <Route path="/settings" element={<O.Settings />} />
         <Route path="/me/*" element={<Navigate to="/" replace />} />
         <Route path="*" element={<O.NotFound />} />
+      </Route>
+    </Routes>
+  );
+}
+
+// Site supervisors: attendance for their own sites (the server enforces which sites).
+function SupervisorRoutes() {
+  usePrefetch(supervisorPages);
+  return (
+    <Routes>
+      <Route element={<AdminLayout />}>
+        <Route path="/attendance" element={<V.Attendance />} />
+        <Route path="/account" element={<V.Account />} />
+        <Route path="*" element={<Navigate to="/attendance" replace />} />
       </Route>
     </Routes>
   );
@@ -100,8 +125,17 @@ function StaffRoutes() {
   );
 }
 
-// Only rendered once signed in (AuthProvider shows setup / sign-in screens before that).
+// Only rendered once signed in (AuthProvider shows the sign-in / sign-up screens before that).
 export default function App() {
   const { principal } = useAuth();
-  return <BrowserRouter>{principal.role === 'staff' ? <StaffRoutes /> : <OfficeRoutes />}</BrowserRouter>;
+  const routes = {
+    staff: <StaffRoutes />,
+    supervisor: <SupervisorRoutes />,
+    platform: (
+      <Suspense fallback={<PageLoader />}>
+        <PlatformApp />
+      </Suspense>
+    ),
+  }[principal.role] || <OfficeRoutes />;
+  return <BrowserRouter>{routes}</BrowserRouter>;
 }

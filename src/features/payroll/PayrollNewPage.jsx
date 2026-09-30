@@ -18,6 +18,7 @@ import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 import { Checkbox } from '@/shared/ui/checkbox';
 import { Input } from '@/shared/ui/input';
+import { AmountInput } from '@/shared/ui/number-inputs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { EmptyState, ErrorState } from '@/shared/components/States';
@@ -51,20 +52,8 @@ const MODES = [
   { value: 'bank', label: 'Bank' },
 ];
 
-function MoneyInput({ value, onChange, max, label }) {
-  return (
-    <Input
-      type="number"
-      inputMode="numeric"
-      min="0"
-      max={max}
-      value={value}
-      placeholder="0"
-      aria-label={label}
-      onChange={(e) => onChange(e.target.value)}
-      className="h-10 w-24 text-right sm:h-8"
-    />
-  );
+function MoneyInput({ value, onChange, label }) {
+  return <AmountInput value={value} placeholder="0" aria-label={label} onChange={onChange} className="h-10 w-24 text-right sm:h-8" />;
 }
 
 export default function PayrollNew() {
@@ -355,15 +344,15 @@ export default function PayrollNew() {
                     <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
                       <label className="space-y-1">
                         <span className="text-muted-foreground">Recover</span>
-                        <Input type="number" inputMode="numeric" min="0" disabled={!r.advanceBalance} value={a.advance || ''} placeholder={r.advanceBalance ? `max ${r.advanceBalance}` : '—'} onChange={(e) => setField(id, 'advance', e.target.value)} />
+                        <AmountInput disabled={!r.advanceBalance} value={a.advance || ''} placeholder={r.advanceBalance ? `max ${r.advanceBalance}` : '—'} onChange={(v) => setField(id, 'advance', v)} />
                       </label>
                       <label className="space-y-1">
                         <span className="text-muted-foreground">Bonus</span>
-                        <Input type="number" inputMode="numeric" min="0" value={a.bonus || ''} placeholder="0" onChange={(e) => setField(id, 'bonus', e.target.value)} />
+                        <AmountInput value={a.bonus || ''} placeholder="0" onChange={(v) => setField(id, 'bonus', v)} />
                       </label>
                       <label className="space-y-1">
                         <span className="text-muted-foreground">Deduct</span>
-                        <Input type="number" inputMode="numeric" min="0" value={a.deductions || ''} placeholder="0" onChange={(e) => setField(id, 'deductions', e.target.value)} />
+                        <AmountInput value={a.deductions || ''} placeholder="0" onChange={(v) => setField(id, 'deductions', v)} />
                       </label>
                     </div>
                   )}

@@ -13,6 +13,7 @@ import { Field } from '@/shared/components/Field';
 import { InstallApp } from '@/shared/components/AppStatus';
 import { ChangePasswordForm } from '@/features/auth/AuthScreens';
 import { PushToggle } from '@/features/notifications/PushToggle';
+import { TeamCard } from '@/features/settings/components/TeamCard';
 
 const schema = z.object({
   name: z.string().trim().min(2, 'Enter your business name'),
@@ -83,6 +84,7 @@ export default function Settings() {
           </CardFooter>
         </Card>
       </form>
+      <TeamCard />
       <Card className="max-w-2xl">
         <CardContent className="p-4"><PushToggle /></CardContent>
       </Card>

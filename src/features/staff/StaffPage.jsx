@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { CreditCard, Eye, KeyRound, Pencil, Phone, Plus, Trash2, UserCheck, Users } from 'lucide-react';
+import { CreditCard, Eye, FileUp, KeyRound, Pencil, Phone, Plus, Trash2, UserCheck, Users } from 'lucide-react';
 import { staffApi } from '@/features/staff/api';
 import { useApi } from '@/shared/hooks/useApi';
 import { formatCurrency, formatDate, ROLE_LABELS } from '@/shared/lib/format';
@@ -19,6 +19,7 @@ import { FilterTabs, RowActions, SearchInput, Toolbar } from '@/shared/component
 import { useConfirm } from '@/shared/components/ConfirmDialog';
 import { StaffFormSheet } from '@/features/staff/components/StaffFormSheet';
 import { StaffAccessDialog } from '@/features/staff/components/StaffAccessDialog';
+import { StaffImportDialog } from '@/features/staff/components/StaffImportDialog';
 import { businessLabel, sendLoginOnWhatsApp } from '@/features/staff/loginShare';
 import { useOrg } from '@/features/auth/AuthContext';
 
@@ -33,6 +34,7 @@ export default function Staff() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [access, setAccess] = useState({ staff: null, credentials: null });
+  const [importOpen, setImportOpen] = useState(false);
 
   const counts = useMemo(() => {
     const c = { all: 0, active: 0, 'on-leave': 0, inactive: 0 };
@@ -119,9 +121,14 @@ export default function Staff() {
         title="Staff"
         description="Your team, their roles and daily wages"
         actions={
-          <Button size="sm" onClick={() => openForm()}>
-            <Plus /> Register staff
-          </Button>
+          <>
+            <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
+              <FileUp /> Import
+            </Button>
+            <Button size="sm" onClick={() => openForm()}>
+              <Plus /> Register staff
+            </Button>
+          </>
         }
       />
 
@@ -241,11 +248,11 @@ export default function Staff() {
           reload();
           if (!credentials) return;
           setAccess({ staff: { ...saved, portalEnabled: true }, credentials });
-          if (!sendLoginOnWhatsApp({ ...credentials, name: credentials.name || saved.name }, businessLabel(org))) {
-            toast.info('Tap “Send on WhatsApp” to send the login');
-          }
+          // Registration ends in the worker's WhatsApp chat with the login typed in.
+          sendLoginOnWhatsApp({ ...credentials, name: credentials.name || saved.name }, businessLabel(org), { navigate: true });
         }}
       />
+      <StaffImportDialog open={importOpen} onOpenChange={setImportOpen} onImported={reload} />
       <StaffAccessDialog
         staff={access.staff}
         open={Boolean(access.staff)}

@@ -20,8 +20,9 @@ const greeting = () => {
 };
 const clock = (d) => new Date(d).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
 
-// Best-effort GPS: resolves null when unavailable, denied or slow (never blocks check-in).
-const getLocation = () =>
+// Best-effort GPS: resolves null when unavailable, denied or slow. Sites with a check-in zone ask
+// for a fresh, precise fix and wait longer (the server refuses a check-in without one).
+const getLocation = (strict = false) =>
   new Promise((resolve) => {
     if (!navigator.geolocation || !window.isSecureContext) {
       resolve(null);
@@ -30,7 +31,7 @@ const getLocation = () =>
     navigator.geolocation.getCurrentPosition(
       (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy }),
       () => resolve(null),
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+      strict ? { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 } : { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
     );
   });
 
@@ -47,7 +48,9 @@ function CheckInCard({ home, onChanged }) {
   const checkIn = async () => {
     setBusy(true);
     try {
-      const location = await getLocation();
+      const fenced = Boolean(openSites.find((s) => s._id === siteId)?.geofence);
+      const location = await getLocation(fenced);
+      if (fenced && !location) throw new Error('This site checks your location. Turn on location (GPS) and allow it for this app, then try again.');
       const res = await portalApi.checkIn({ siteId, status, ...(location || {}) });
       toast.success(res.message, { description: location ? 'Location shared with the office' : undefined });
       onChanged();
@@ -120,6 +123,7 @@ function CheckInCard({ home, onChanged }) {
                     <span className="min-w-0">
                       <span className="block text-sm font-medium">{s.name}</span>
                       {(s.address || s.clientName) && <span className="block truncate text-xs text-muted-foreground">{s.address || s.clientName}</span>}
+                      {s.geofence && <span className="block text-xs text-blue-700">Check in at the site · location is checked</span>}
                     </span>
                   </button>
                 ))}
@@ -127,6 +131,7 @@ function CheckInCard({ home, onChanged }) {
             ) : (
               <p className="text-sm">
                 Site: <span className="font-medium">{openSites[0].name}</span>
+                {openSites[0].geofence && <span className="block text-xs text-blue-700">Check in at the site · location is checked</span>}
               </p>
             )}
             <div className="grid grid-cols-2 gap-1 rounded-md bg-muted p-1" role="radiogroup" aria-label="Day">
